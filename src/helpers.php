@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Shubin Sergei <is.captain.fail@gmail.com>
- * @license MIT
+ * @license GNU General Public License v3.0
  * 26.06.2020 2020
  */
 

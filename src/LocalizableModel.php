@@ -3,7 +3,7 @@
  * @package   Laravel localization package
  * @author    Sergei Shubin <is.captain.fail@gmail.com>
  * @copyright 2018
- * @license   MIT <http://opensource.org/licenses/MIT>
+ * @license   GNU General Public License v3.0
  * @version   0.1.7
  */
 
