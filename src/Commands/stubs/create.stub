@@ -1,0 +1,57 @@
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Str;
+
+class DummyClass extends Migration
+{
+    protected $plural = null;
+    protected $singular = null;
+
+    public function __construct()
+    {
+        $this->plural = "DummyTable";
+        $this->singular = Str::singular($this->plural);
+    }
+
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create($this->plural, function (Blueprint $table) {
+            $table->bigIncrements("id");
+            $table->timestamps();
+        });
+        Schema::create("{$this->singular}_translates", function (Blueprint $table) {
+            $table->bigIncrements("id");
+            $table->string("locale", 5);
+            $table->unsignedBigInteger("{$this->singular}_id");
+            $table->timestamps();
+        });
+        Schema::table("{$this->singular}_translates", function (Blueprint $table) {
+            $table->foreign("{$this->singular}_id", "{$this->singular}_inforeign")
+                ->references("id")->on("{$this->plural}")
+                ->onDelete("cascade");
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table("{$this->singular}_translates", function (Blueprint $table) {
+            $table->dropForeign("{$this->singular}_inforeign");
+            $table->dropColumn("{$this->singular}_id");
+        });
+        Schema::dropIfExists("{$this->plural}");
+        Schema::dropIfExists("{$this->singular}_translates");
+    }
+}

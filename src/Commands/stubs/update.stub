@@ -1,0 +1,48 @@
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Str;
+
+class DummyClass extends Migration
+{
+    protected $plural = null;
+    protected $singular = null;
+
+    public function __construct()
+    {
+        $this->plural = "DummyTable";
+        $this->singular = Str::singular($this->plural);
+    }
+
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::table($this->plural, function (Blueprint $table) {
+
+        });
+        Schema::table("{$this->singular}_translates", function (Blueprint $table) {
+
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table($this->plural, function (Blueprint $table) {
+
+        });
+        Schema::table("{$this->singular}_translates", function (Blueprint $table) {
+
+        });
+    }
+}

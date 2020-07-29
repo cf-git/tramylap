@@ -1,0 +1,10 @@
+<?php
+
+namespace DummyNamespace;
+
+use CFGit\Tramylap\TranslatesModel;
+
+class DummyClass extends TranslatesModel
+{
+
+}
