@@ -2,7 +2,7 @@
     "name": "cf-git/tramylap",
     "description": "Laravel DB internationalization package",
     "type": "package",
-    "license": "GNU GPLv3",
+    "license": "GPL-3.0-or-later",
     "version": "0.1.3",
     "authors": [
         {
