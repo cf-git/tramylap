@@ -1,6 +1,6 @@
 <?php
 
-namespace CFGit\Middleware;
+namespace CFGit\Tramylap\Middleware;
 
 use Closure;
 use Carbon\Carbon;
