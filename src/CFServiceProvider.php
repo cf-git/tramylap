@@ -41,7 +41,7 @@ class CFServiceProvider extends ServiceProvider
      * @return $this
      */
     public function registerMiddleware() {
-    	$this->app->get('router')->middleware('locale', \CFGit\Tramylap\Middleware\Localization::class);
+    	$this->app->get('router')->aliasMiddleware('locale', \CFGit\Tramylap\Middleware\Localization::class);
         return $this;
     }
 
