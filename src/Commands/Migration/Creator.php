@@ -22,4 +22,26 @@ class Creator extends MigrationCreator
     {
         return __DIR__.'/../stubs';
     }
+
+    /**
+     * Get the migration stub file.
+     *
+     * @param  string|null  $table
+     * @param  bool  $create
+     * @return string
+     */
+    protected function getStub($table, $create)
+    {
+        $stub = $this->stubPath() . (
+            is_null($table)
+                ? '/blank.stub'
+                : (
+            $create
+                ? '/create.stub'
+                : '/update.stub'
+            )
+            );
+
+        return $this->files->get($stub);
+    }
 }
