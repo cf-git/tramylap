@@ -31,9 +31,24 @@ class CFServiceProvider extends ServiceProvider
         $this->publishes([
             ( __DIR__.'/resources/assets') => public_path('vendor/cf-git/tramylap'),
         ], 'assets');
-        $this->registerCommands();
+
+        $this
+        	->registerMiddleware()
+        	->registerCommands();
     }
 
+    /**
+     * @return $this
+     */
+    public function registerMiddleware() {
+    	$this->app->get('router')->middleware('locale', \CFGit\Tramylap\Middleware\Localization::class);
+        return $this;
+    }
+
+    
+    /**
+     * @return $this
+     */
     public function registerCommands()
     {
         $this->app->singleton("command.migrate.make.tramylap", function (Application $app) {
@@ -50,6 +65,7 @@ class CFServiceProvider extends ServiceProvider
             "command.model.make.tramylap",
             "command.model.make.translate",
         ]);
+        return $this;
     }
 
     /**
