@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'default' => 'en',
     'locales' => [
         [
             'name' => 'English',
