@@ -103,14 +103,13 @@ abstract class LocalizableModel extends Model
      * @param $locale
      * @return false|Model
      */
-    public function getTranslateObject($locale)
+    public function getTranslateObject($locale, $attributes = [])
     {
         $this->refresh('translates');
-        return $this->translates->where('locale', $locale)->first()??$this->translates()->save(
-                new $this->translates_model_name([
-                    'locale' => $locale
-                ])
-            );
+        $attributes['locale'] = $locale;
+        return $this->translates->where('locale', $locale)->first()??($this->translates()->save(
+            new $this->translates_model_name($attributes)
+        ));
     }
 
     /**
