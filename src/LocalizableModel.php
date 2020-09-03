@@ -15,6 +15,14 @@ use Illuminate\Database\Eloquent\Model;
 abstract class LocalizableModel extends Model
 {
 
+    protected $appendLocalizableAccessorsList = true;
+
+    protected $localizableAccessorsList = [];
+
+    protected $appendLocalizableMutatorsList = true;
+
+    protected $localizableMutatorsList = [];
+
     /**
      * Localized attributes
      *
@@ -77,7 +85,32 @@ abstract class LocalizableModel extends Model
                 }
             }
         }
+        if($this->appendLocalizableAccessorsList) {
+            foreach ($this->localizable as $localizableAttribute) {
+                $this->localizableAccessorsList[] = 'get' . Str::studly($localizableAttribute) . 'Attribute';
+                foreach (array_column(config('tramylap.locales'),'slug') as $locale) {
+                    $this->localizableAccessorsList[] = 'get' . Str::studly($localizableAttribute.'_'.$locale) . 'Attribute';
+                }
+            }
+        }
+        if($this->appendLocalizableMutatorsList) {
+            foreach ($this->localizable as $localizableAttribute) {
+                $this->localizableMutatorsList[] = 'set' . Str::studly($localizableAttribute) . 'Attribute';
+                foreach (array_column(config('tramylap.locales'),'slug') as $locale) {
+                    $this->localizableMutatorsList[] = 'set' . Str::studly($localizableAttribute.'_'.$locale) . 'Attribute';
+                }
+            }
+        }
         parent::__construct($attributes);
+    }
+
+    /**
+     * @param string $key
+     * @return bool
+     */
+    public function hasSetMutator($key)
+    {
+        return in_array('set'.Str::studly($key).'Attribute', $this->localizableMutatorsList) || parent::hasSetMutator($key);
     }
 
     /**
@@ -105,11 +138,30 @@ abstract class LocalizableModel extends Model
      */
     public function getTranslateObject($locale, $attributes = [])
     {
-        $this->refresh('translates');
-        $attributes['locale'] = $locale;
-        return $this->translates->where('locale', $locale)->first()??($this->translates()->save(
-            new $this->translates_model_name($attributes)
-        ));
+        if ($this->exists) {
+            if ($this->isDirty()) $this->save();
+            $this->refresh('translates');
+            if (is_null($tObj = $this->translates->where('locale', $locale)->first())) {
+                $tObj = $this->translates()->save(
+                    new $this->translates_model_name([
+                        'locale' => $locale
+                    ])
+                );
+            }
+            if (!empty($attributes)) {
+                $tObj->fill($attributes)->save();
+            }
+            return $tObj;
+        } else {
+            static::created(function($model) use ($locale, $attributes) {
+                if ($model === $this) {
+                    $attributes['locale'] = $locale;
+                    $this->translates()->save(
+                        new $this->translates_model_name($attributes)
+                    );
+                }
+            });
+        }
     }
 
     /**
@@ -137,8 +189,6 @@ abstract class LocalizableModel extends Model
      */
     public function __get($attribute)
     {
-        // If the attribute is localizable, we retrieve its translation
-        // for the current locale
         foreach ($this->localizable as $localizableAttribute) {
             if (in_array($attribute, $this->localized_property)) {
                 $property = explode('_', $attribute);
@@ -154,9 +204,9 @@ abstract class LocalizableModel extends Model
             if ($attribute === $localizableAttribute) {
                 try {
                     return $this->translates
-                        ->where('locale', app()->getLocale())
-                        ->first()
-                        ->{$localizableAttribute}??$this->translates
+                            ->where('locale', app()->getLocale())
+                            ->first()
+                            ->{$localizableAttribute}??$this->translates
                             ->where('locale', config('app.fallback_locale'))
                             ->first()
                             ->{$localizableAttribute};
@@ -182,14 +232,38 @@ abstract class LocalizableModel extends Model
      */
     public function __call($method, $arguments)
     {
-        foreach ($this->localized_property as $localizableAttribute) {
-            if ($method === 'get' . Str::studly($localizableAttribute) . 'Attribute') {
-                return $this->{$localizableAttribute};
+        if (in_array($method, $this->localizableAccessorsList)) {
+            foreach ($this->localized_property as $localizableAttribute) {
+                if ($method === 'get' . Str::studly($localizableAttribute) . 'Attribute') {
+                    return $this->{$localizableAttribute};
+                }
+            }
+            foreach ($this->localizable as $localizableAttribute) {
+                if ($method === 'get' . Str::studly($localizableAttribute) . 'Attribute') {
+                    return $this->{$localizableAttribute};
+                }
             }
         }
-        foreach ($this->localizable as $localizableAttribute) {
-            if ($method === 'get' . Str::studly($localizableAttribute) . 'Attribute') {
-                return $this->{$localizableAttribute};
+
+        if (in_array($method, $this->localizableMutatorsList)) {
+            foreach ($this->localizable as $localizableAttribute) {
+                // Must be array - value[{locale}]
+                if ($method === ('set' . Str::studly($localizableAttribute) . 'Attribute')) {
+                    return $this;
+                }
+            }
+            foreach ($this->localized_property as $localizableAttribute) {
+                // Single value - value_{locale}
+                if ($method === ('set' . Str::studly($localizableAttribute) . 'Attribute')) {
+                    list($value) = $arguments;
+                    $segments = explode('_', $localizableAttribute);
+                    $locale = array_pop($segments);
+                    $attribute = implode('_', $segments);
+                    $tObj = $this->getTranslateObject($locale, [
+                        $attribute => $value
+                    ]);
+                    return $this;
+                }
             }
         }
 
