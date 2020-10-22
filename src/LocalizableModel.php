@@ -9,6 +9,7 @@
 
 namespace CFGit\Tramylap;
 
+use App\Models\Page;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 
@@ -75,7 +76,7 @@ abstract class LocalizableModel extends Model
         if ($this->hideTranslates) {
             $this->hidden[] = 'translates';
         }
-        // We dynamically append localizable attributes to array output
+
         if ($this->appendLocalizedAttributes) {
             foreach ($this->localizable as $localizableAttribute) {
                 $this->appends[] = $localizableAttribute;
@@ -101,7 +102,21 @@ abstract class LocalizableModel extends Model
                 }
             }
         }
+
+        $this->loadProcessors();
+
         parent::__construct($attributes);
+    }
+
+    protected function loadProcessors()
+    {
+        $translates = [];
+        static::saving(function(LocalizableModel $model) use (&$translates){
+            $translates = $model->translates;
+        });
+        static::saved(function(LocalizableModel $model) use ($translates) {
+            $model->translates()->saveMany($model->translates);
+        });
     }
 
     /**
@@ -138,30 +153,16 @@ abstract class LocalizableModel extends Model
      */
     public function getTranslateObject($locale, $attributes = [])
     {
-        if ($this->exists) {
-            if ($this->isDirty()) $this->save();
-            $this->refresh('translates');
-            if (is_null($tObj = $this->translates->where('locale', $locale)->first())) {
-                $tObj = $this->translates()->save(
-                    new $this->translates_model_name([
-                        'locale' => $locale
-                    ])
-                );
-            }
-            if (!empty($attributes)) {
-                $tObj->fill($attributes)->save();
-            }
-            return $tObj;
-        } else {
-            static::created(function($model) use ($locale, $attributes) {
-                if ($model === $this) {
-                    $attributes['locale'] = $locale;
-                    $this->translates()->save(
-                        new $this->translates_model_name($attributes)
-                    );
-                }
-            });
+        $translate = $this->translates->where('locale', $locale)->first();
+        if (is_null($translate)) {
+            /** @var TranslatesModel $translate */
+            $translate = new $this->translates_model_name([
+                'locale' => $locale
+            ]);
+            $this->translates->push($translate);
         }
+        $translate->fill($attributes);
+        return  $translate;
     }
 
     /**
@@ -195,27 +196,15 @@ abstract class LocalizableModel extends Model
                 $locale = array_pop($property);
                 $property = implode('_', $property);
                 try {
-                    return $this->translates
-                        ->where('locale', $locale)
-                        ->first()
-                        ->{$property};
+                    return $this->getTranslateObject(app()->getLocale())->{$property};
                 } catch (\Throwable $e) {}
             }
             if ($attribute === $localizableAttribute) {
                 try {
-                    return $this->translates
-                            ->where('locale', app()->getLocale())
-                            ->first()
-                            ->{$localizableAttribute}??$this->translates
-                            ->where('locale', config('app.fallback_locale'))
-                            ->first()
-                            ->{$localizableAttribute};
+                    return $this->getTranslateObject(app()->getLocale())->{$localizableAttribute};
                 } catch (\Throwable $e) {}
                 try {
-                    return $this->translates
-                        ->where('locale', config('app.fallback_locale'))
-                        ->first()
-                        ->{$localizableAttribute};
+                    return $this->getTranslateObject(config('app.fallback_locale'))->{$localizableAttribute};
                 } catch (\Throwable $e) {}
             }
         }
@@ -246,16 +235,21 @@ abstract class LocalizableModel extends Model
         }
 
         if (in_array($method, $this->localizableMutatorsList)) {
+            list($value) = $arguments;
             foreach ($this->localizable as $localizableAttribute) {
-                // Must be array - value[{locale}]
+                /* Must be array - value[{locale}] */
                 if ($method === ('set' . Str::studly($localizableAttribute) . 'Attribute')) {
+                    foreach ($value as $locale => $val) {
+                        $tObj = $this->getTranslateObject($locale, [
+                            $val
+                        ]);
+                    }
                     return $this;
                 }
             }
             foreach ($this->localized_property as $localizableAttribute) {
                 // Single value - value_{locale}
                 if ($method === ('set' . Str::studly($localizableAttribute) . 'Attribute')) {
-                    list($value) = $arguments;
                     $segments = explode('_', $localizableAttribute);
                     $locale = array_pop($segments);
                     $attribute = implode('_', $segments);
