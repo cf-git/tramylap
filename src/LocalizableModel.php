@@ -156,7 +156,7 @@ abstract class LocalizableModel extends Model
         $translate = $this->translates->where('locale', $locale)->first();
         if (is_null($translate)) {
             /** @var TranslatesModel $translate */
-            $translate = new $this->translates_model_name([
+            $translate = $this->translates()->firstOrCreate([
                 'locale' => $locale
             ]);
             $this->translates->push($translate);
