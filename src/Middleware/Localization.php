@@ -18,8 +18,8 @@ class Localization
     {
         $locale = $request->route()->parameter('lang');
         $request->route()->forgetParameter("lang");
-        $locale = in_array($locale, config("app.locales.available")) ? $locale : config(
-            'app.locales.default',
+        $locale = in_array($locale, config("tramylap.available")) ? $locale : config(
+            'tramylap.default',
             config(
                 'tramylap.default',
                 config('app.locale', 'en')
