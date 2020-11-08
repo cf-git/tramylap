@@ -1,9 +1,9 @@
 {
     "name": "cf-git/tramylap",
-    "description": "Laravel DB internationalization package",
+    "description": "Laravel DB internationalization package (v8)",
     "type": "package",
     "license": "GPL-3.0-or-later",
-    "version": "0.2.0",
+    "version": "1.0.1",
     "authors": [
         {
             "name": "Sergei Shubin",
@@ -12,8 +12,8 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "php": ">=7.1.0",
-        "laravel/framework": ">= 5.7 < 8.*",
+        "php": ">=7.3.0",
+        "laravel/framework": ">= 8.0",
         "laravel/tinker": ">= 1.0"
     },
     "autoload": {

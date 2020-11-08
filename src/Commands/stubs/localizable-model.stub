@@ -1,11 +1,12 @@
 <?php
 
-namespace DummyNamespace;
+namespace {{ namespace }};
 
 use Illuminate\Database\Eloquent\Model;
 use CFGit\Tramylap\LocalizableModel;
 
-class DummyClass extends LocalizableModel
+class {{ class }} extends LocalizableModel
 {
+    use HasFactory;
     protected $localizable = [];
 }
