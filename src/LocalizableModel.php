@@ -152,7 +152,8 @@ abstract class LocalizableModel extends Model
     public function getTranslatesModelName()
     {
         $modelName = class_basename(get_class($this));
-        return "\\App\\Models\\{$modelName}Translate";
+        $subSpace = is_dir(app_path("Models")) ? "\\Models" : "";
+        return "\\App{$subSpace}\\Translates\\{$modelName}Translate";
     }
 
     /**

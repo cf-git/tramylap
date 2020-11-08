@@ -19,7 +19,9 @@ abstract class TranslatesModel extends Model
     public function __construct($attributes = [])
     {
         $this->bootIfNotBooted();
-        $this->translatableModel = "App\\Models\\".substr(class_basename(get_class($this)), 0, -9);
+        $localizableBaseName = substr(class_basename(get_class($this)), 0, -9);
+        $subSpace = is_dir(app_path("Models")) ? "\\Models" : "";
+        $this->translatableModel = ("App{$subSpace}\\{$localizableBaseName}");
         $this->blank = $translatableObject = with(new $this->translatableModel);
         $this->fillable = $translatableObject->getLocalizableFields()??[];
         $this->fillable[] = 'locale';
