@@ -2,6 +2,7 @@
 
 return [
     'default' => 'en',
+    'available' => ['en', 'ru', 'uk'],
     'locales' => [
         [
             'name' => 'English',
