@@ -91,7 +91,7 @@ class LocalizableModelMakeCommand extends GeneratorCommand
     protected function getDefaultNamespace($rootNamespace)
     {
         $subSpace = is_dir(app_path("Models")) ? "\\Models" : "";
-        return $subSpace.$rootNamespace;
+        return $rootNamespace.$subSpace;
     }
 
     /**
