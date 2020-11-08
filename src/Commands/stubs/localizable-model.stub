@@ -7,6 +7,5 @@ use CFGit\Tramylap\LocalizableModel;
 
 class {{ class }} extends LocalizableModel
 {
-    use HasFactory;
     protected $localizable = [];
 }
