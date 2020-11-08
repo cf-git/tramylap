@@ -15,7 +15,7 @@ return [
         ],
         [
             'name' => 'Украинский',
-            'slug' => 'ua',
+            'slug' => 'uk',
             'icon' => 'ukraine.svg',
         ],
     ],
