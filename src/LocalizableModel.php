@@ -213,6 +213,9 @@ abstract class LocalizableModel extends Model
                     return $this->getTranslateObject(app()->getLocale())->{$localizableAttribute};
                 } catch (\Throwable $e) {}
                 try {
+                    return $this->getTranslateObject(config('app.locale'))->{$localizableAttribute};
+                } catch (\Throwable $e) {}
+                try {
                     return $this->getTranslateObject(config('app.fallback_locale'))->{$localizableAttribute};
                 } catch (\Throwable $e) {}
             }
