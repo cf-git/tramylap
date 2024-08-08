@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Str;
 
-class DummyClass extends Migration
+return new class extends Migration
 {
     protected $plural = null;
     protected $singular = null;
@@ -45,4 +45,4 @@ class DummyClass extends Migration
 
         });
     }
-}
+};
